@@ -73,7 +73,12 @@ if [[ -n "${SONAR_ROOT_CERT}" ]]; then
   scanner_args+=("-Dsonar.scanner.truststorePassword=$SONAR_SSL_TRUSTSTORE_PASSWORD")
 fi
 
-scanner_args+=("$@")
+# Split INPUT_ARGS into an array, respecting quoted strings
+IFS=$'\n'; args=($(echo ${INPUT_ARGS} | egrep -o '[^" ]+="[^"]*"|[^" ]+|"[^"]+"'))
+for arg in "${args[@]}"; do
+  echo "ARG: $arg"
+  scanner_args+=("$arg")
+done
 
 set -ux
 

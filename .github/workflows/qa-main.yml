@@ -45,6 +45,8 @@ jobs:
         env:
           SONAR_HOST_URL: http://not_actually_used
           SONAR_SCANNER_JSON_PARAMS: '{"sonar.scanner.internal.dumpToFile": "./output.properties"}'
+      - name: Copy output.properties to current directory for easier debugging
+        run: cp ./output.properties C:/Users/antoine.vinot/Dev/tmp/output.properties
       - name: Assert
         run: |
           ./test/assertFileContains ./output.properties "sonar.someArg=aValue"
@@ -74,6 +76,30 @@ jobs:
       - name: Assert the scanner was not called
         run: |
           ./test/assertFileDoesntExist ./output.properties
+  argsCommandInjectionTest:
+    name: >
+      'args' input with backticks injection does not execute command
+    strategy:
+      matrix:
+        os: [ ubuntu-latest-large, windows-latest-large, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run action with args
+        uses: ./
+        continue-on-error: true
+        with:
+          args: -Dsonar.someArg="test `echo Command Injection`"
+        env:
+          SONAR_HOST_URL: http://not_actually_used
+          SONAR_SCANNER_JSON_PARAMS: '{"sonar.scanner.internal.dumpToFile": "./output.properties"}'
+      - name: Copy output.properties to current directory for easier debugging
+        run: cp ./output.properties C:/Users/antoine.vinot/Dev/tmp/output.properties
+      - name: Assert command in arg is not executed
+        run: |
+          ./test/assertFileContains ./output.properties 'sonar.someArg=test Command Injection'
   projectBaseDirInputTest:
     name: >
       'projectBaseDir' input
