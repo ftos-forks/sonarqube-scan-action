@@ -2,7 +2,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 
 const config = {
-  input: "src/index.js",
+  input: ["src/index.js", "src/install-build-wrapper/install-build-wrapper.js"],
   output: {
     esModule: true,
     dir: "dist",
